@@ -2,255 +2,274 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Coin Index Pro</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Heebo', sans-serif; }
-    @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;600;700&display=swap');
-    body { background: #f5f5f5; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Heebo', sans-serif; background: #f0f2f5; color: #1a1a1a; }
+
+    .header { background: white; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; position: sticky; top: 0; z-index: 100; }
+    .header-title { font-size: 1.15em; font-weight: 700; }
+    .header-stats { font-size: 0.78em; color: #888; }
+
+    .toolbar { background: white; padding: 10px 16px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eee; }
+    .filter-scroll { display: flex; gap: 6px; overflow-x: auto; flex: 1; }
+    .filter-scroll::-webkit-scrollbar { display: none; }
+    .chip { padding: 6px 14px; border-radius: 20px; border: 1.5px solid #e0e0e0; background: white; font-size: 0.8em; white-space: nowrap; cursor: pointer; font-family: inherit; font-weight: 600; color: #555; transition: all 0.15s; }
+    .chip.active { background: #2e7d32; color: white; border-color: #2e7d32; }
+
+    .cols-control { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+    .cols-label { font-size: 0.78em; color: #888; }
+    .cols-btn { width: 28px; height: 28px; border-radius: 8px; border: 1.5px solid #ddd; background: white; cursor: pointer; font-size: 1em; font-weight: 700; color: #555; }
+    .cols-num { font-size: 0.9em; font-weight: 700; min-width: 16px; text-align: center; }
+
+    .grid { display: grid; gap: 10px; padding: 12px; }
+
+    .coin-card { background: white; border-radius: 14px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+    .coin-imgs { width: 100%; aspect-ratio: 1; overflow-x: auto; display: flex; scroll-snap-type: x mandatory; background: #f5f5f5; position: relative; }
+    .coin-imgs::-webkit-scrollbar { display: none; }
+    .coin-img-slide { flex: 0 0 100%; scroll-snap-align: start; }
+    .coin-img-slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .coin-no-img { width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #f5f5f5, #e8e8e8); display: flex; align-items: center; justify-content: center; font-size: 2.5em; }
     
-    /* Header */
-    .header { background: white; padding: 16px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 8px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 100; }
-    .header h1 { font-size: 1.2em; font-weight: 700; color: #1a1a1a; }
-    .header-stats { font-size: 0.8em; color: #666; }
-    
-    /* Filter Bar */
-    .filter-bar { background: white; padding: 12px 16px; display: flex; gap: 8px; overflow-x: auto; border-bottom: 1px solid #eee; }
-    .filter-bar::-webkit-scrollbar { display: none; }
-    .filter-chip { padding: 6px 14px; border-radius: 20px; border: 1px solid #ddd; background: white; font-size: 0.8em; white-space: nowrap; cursor: pointer; transition: all 0.2s; }
-    .filter-chip.active { background: #2e7d32; color: white; border-color: #2e7d32; }
-    
-    /* Grid */
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
-    @media (min-width: 600px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-    @media (min-width: 900px) { .grid { grid-template-columns: repeat(4, 1fr); } }
-    
-    /* Coin Card */
-    .coin-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
-    .coin-img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; background: #f0f0f0; }
-    .coin-img-placeholder { width: 100%; aspect-ratio: 1; background: linear-gradient(135deg, #f5f5f5, #e0e0e0); display: flex; align-items: center; justify-content: center; font-size: 2em; }
-    .coin-info { padding: 10px; }
-    .coin-name { font-weight: 700; font-size: 0.9em; color: #1a1a1a; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .coin-price { color: #2e7d32; font-weight: 700; font-size: 1em; }
-    .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
-    .tag { padding: 2px 8px; border-radius: 12px; font-size: 0.68em; font-weight: 600; }
-    .tag-country { background: #e8f5e9; color: #2e7d32; }
-    .tag-material { background: #fff8e1; color: #f57f17; }
-    .tag-year { background: #fce4ec; color: #c62828; }
-    .edit-btn { width: 100%; padding: 8px; background: #f5f5f5; border: none; border-radius: 0 0 16px 16px; font-size: 0.8em; color: #666; cursor: pointer; margin-top: 4px; }
-    .edit-btn:active { background: #e0e0e0; }
-    
-    /* Add Card */
-    .add-card { background: linear-gradient(135deg, #f1fdf4, #e8f5e9); border-radius: 16px; border: 2.5px dashed #81c784; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
-    .add-plus { font-size: 2.5em; color: #4caf50; }
-    .add-label { font-size: 0.75em; color: #4caf50; font-weight: 600; margin-top: 4px; }
-    
+    /* Badge תגובות על התמונה */
+    .comments-badge {
+      position: absolute; bottom: 8px; right: 8px;
+      background: rgba(0,0,0,0.65); color: white;
+      border-radius: 12px; padding: 3px 8px;
+      font-size: 0.72em; font-weight: 700;
+      display: flex; align-items: center; gap: 3px;
+    }
+
+    .coin-body { padding: 8px 10px 6px; }
+    .coin-row1 { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+    .coin-name { font-weight: 700; font-size: 0.88em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 65%; }
+    .coin-price { color: #2e7d32; font-weight: 700; font-size: 0.9em; }
+    .tags { display: flex; flex-wrap: wrap; gap: 3px; }
+    .tag { padding: 2px 7px; border-radius: 10px; font-size: 0.68em; font-weight: 600; }
+    .tag-c { background: #e8f5e9; color: #2e7d32; }
+    .tag-m { background: #fff8e1; color: #e65100; }
+    .tag-y { background: #fce4ec; color: #c62828; }
+
+    .card-actions { padding: 6px 10px; border-top: 1px solid #f0f0f0; display: flex; justify-content: space-between; }
+    .card-btn { font-size: 0.78em; color: #888; cursor: pointer; background: none; border: none; font-family: inherit; padding: 2px 4px; }
+    .card-btn:active { color: #333; }
+
+    .add-card { background: #f9fef9; border: 2px dashed #a5d6a7; border-radius: 14px; aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; }
+    .add-card:active { background: #e8f5e9; }
+    .add-icon { font-size: 2em; color: #4caf50; }
+    .add-text { font-size: 0.78em; color: #4caf50; font-weight: 700; margin-top: 6px; }
+
     /* Modal */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: flex; align-items: flex-end; }
-    .modal { background: white; border-radius: 24px 24px 0 0; width: 100%; max-height: 90vh; overflow-y: auto; padding: 20px; }
-    .modal-title { font-size: 1.1em; font-weight: 700; margin-bottom: 16px; }
-    .form-group { margin-bottom: 14px; }
-    .form-group label { display: block; font-size: 0.85em; font-weight: 600; color: #444; margin-bottom: 6px; }
-    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 12px; font-size: 1em; font-family: inherit; }
-    .form-group input:focus, .form-group select:focus { outline: none; border-color: #4caf50; }
-    
-    /* Image Upload */
-    .img-upload { border: 2px dashed #ddd; border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; background: #fafafa; }
-    .img-upload input { display: none; }
-    .img-upload-label { color: #666; font-size: 0.9em; cursor: pointer; }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200; display: none; align-items: flex-end; }
+    .overlay.open { display: flex; }
+    .modal { background: white; border-radius: 22px 22px 0 0; width: 100%; max-height: 92vh; overflow-y: auto; }
+    .modal-handle { width: 36px; height: 4px; background: #ddd; border-radius: 2px; margin: 12px auto 0; }
+    .modal-head { padding: 14px 18px 10px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0; }
+    .modal-title { font-size: 1em; font-weight: 700; }
+    .modal-close { background: #f0f0f0; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1em; cursor: pointer; }
+    .modal-body { padding: 14px 18px 30px; }
+
+    .fg { margin-bottom: 13px; }
+    .fg label { display: block; font-size: 0.8em; font-weight: 700; color: #555; margin-bottom: 5px; }
+    .fg input, .fg select, .fg textarea { width: 100%; padding: 11px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 0.95em; font-family: inherit; background: #fafafa; }
+    .fg input:focus, .fg select:focus, .fg textarea:focus { outline: none; border-color: #4caf50; background: white; }
+    .fg textarea { resize: none; min-height: 80px; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* תגובות */
+    .comments-section { background: #f9f9f9; border-radius: 12px; padding: 12px; margin-bottom: 13px; }
+    .comments-title { font-size: 0.82em; font-weight: 700; color: #555; margin-bottom: 10px; }
+    .comment-item { background: white; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px; font-size: 0.82em; line-height: 1.4; position: relative; }
+    .comment-del { position: absolute; top: 6px; left: 6px; background: none; border: none; color: #ccc; cursor: pointer; font-size: 0.9em; }
+    .comment-del:hover { color: #e53935; }
+    .comment-input-row { display: flex; gap: 8px; margin-top: 8px; }
+    .comment-input-row input { flex: 1; padding: 8px 12px; border: 1.5px solid #e0e0e0; border-radius: 20px; font-size: 0.85em; font-family: inherit; }
+    .comment-input-row input:focus { outline: none; border-color: #4caf50; }
+    .comment-send { background: #4caf50; color: white; border: none; border-radius: 20px; padding: 8px 14px; font-size: 0.85em; cursor: pointer; font-family: inherit; font-weight: 700; }
+
+    /* AI */
+    .ai-section { background: #f8f0ff; border-radius: 12px; padding: 12px; margin-bottom: 14px; border: 1px solid #e1bee7; }
+    .ai-head { font-size: 0.82em; font-weight: 700; color: #7b1fa2; margin-bottom: 10px; }
+    .ai-imgs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .ai-img-box { border: 1.5px dashed #ce93d8; border-radius: 10px; overflow: hidden; background: white; }
+    .ai-img-box-inner { padding: 10px; text-align: center; cursor: pointer; }
+    .ai-img-box input { display: none; }
+    .ai-img-label { font-size: 0.75em; color: #9c27b0; font-weight: 600; }
+    .ai-cam-btn { display: block; width: 100%; padding: 6px; background: #f3e5f5; border: none; font-size: 0.72em; color: #9c27b0; cursor: pointer; font-family: inherit; border-top: 1px solid #e1bee7; }
+    .ai-img-preview { width: 100%; aspect-ratio: 1; object-fit: cover; display: none; }
+    .ai-result { font-size: 0.82em; background: white; border-radius: 8px; padding: 8px; margin-top: 8px; border: 1px solid #e1bee7; display: none; }
+
+    .upload-area { border: 1.5px dashed #ddd; border-radius: 10px; overflow: hidden; background: #fafafa; cursor: pointer; }
+    .upload-area-inner { padding: 14px; text-align: center; }
+    .upload-area input { display: none; }
+    .upload-label { font-size: 0.82em; color: #888; }
+    .upload-label span { display: block; font-size: 1.3em; margin-bottom: 4px; }
+    .upload-cam-btn { display: block; width: 100%; padding: 8px; background: #f5f5f5; border: none; border-top: 1px solid #eee; font-size: 0.82em; color: #555; cursor: pointer; font-family: inherit; }
     .img-preview { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .img-preview img { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; }
-    .img-preview-item { position: relative; }
-    .img-remove { position: absolute; top: -4px; right: -4px; background: red; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7em; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-    
-    /* AI Box */
-    .ai-box { background: linear-gradient(135deg, #e8f4fd, #f3e5f5); border-radius: 12px; padding: 12px; margin-bottom: 14px; border: 1px solid #ce93d8; }
-    .ai-title { color: #7b1fa2; font-weight: 700; font-size: 0.85em; margin-bottom: 8px; }
-    .ai-result { font-size: 0.85em; color: #333; }
-    
-    /* Buttons */
-    .btn { width: 100%; padding: 14px; border: none; border-radius: 12px; font-size: 1em; font-weight: 700; cursor: pointer; margin-top: 8px; font-family: inherit; }
-    .btn-green { background: #4caf50; color: white; }
-    .btn-red { background: #ef5350; color: white; }
-    .btn-gray { background: #f5f5f5; color: #333; }
-    .btn-purple { background: #9c27b0; color: white; }
+    .img-prev-item { position: relative; }
+    .img-prev-item img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; display: block; }
+    .img-prev-del { position: absolute; top: -4px; left: -4px; background: #ef5350; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65em; cursor: pointer; }
+
+    .btn { width: 100%; padding: 13px; border: none; border-radius: 12px; font-size: 0.95em; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 8px; }
+    .btn-green { background: #43a047; color: white; }
+    .btn-purple { background: #8e24aa; color: white; }
+    .btn-red { background: #e53935; color: white; }
+    .btn-gray { background: #f0f0f0; color: #444; }
     .btn:active { opacity: 0.8; }
     .btn:disabled { opacity: 0.5; }
-    
-    /* Slideshow */
-    .slideshow { width: 100%; aspect-ratio: 1; overflow-x: auto; display: flex; scroll-snap-type: x mandatory; }
-    .slideshow::-webkit-scrollbar { display: none; }
-    .slide { flex: 0 0 100%; scroll-snap-align: start; }
-    .slide img { width: 100%; height: 100%; object-fit: cover; }
-    
-    /* Loading */
-    .loading { text-align: center; padding: 40px; color: #999; }
-    .spinner { display: inline-block; width: 30px; height: 30px; border: 3px solid #ddd; border-top-color: #4caf50; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 10px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    
-    .hidden { display: none; }
-    .two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .close-btn { float: left; background: none; border: none; font-size: 1.4em; cursor: pointer; color: #999; }
-    
-    /* Toast */
-    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 20px; font-size: 0.85em; z-index: 999; opacity: 0; transition: opacity 0.3s; }
+
+    .divider { height: 1px; background: #f0f0f0; margin: 14px 0; }
+
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 22px; border-radius: 22px; font-size: 0.85em; z-index: 999; opacity: 0; transition: opacity 0.25s; pointer-events: none; }
     .toast.show { opacity: 1; }
+    .loading { text-align: center; padding: 48px 0; color: #aaa; grid-column: 1/-1; }
+    .spin { display: inline-block; width: 28px; height: 28px; border: 3px solid #eee; border-top-color: #4caf50; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>🪙 Coin Index Pro</h1>
-  <div class="header-stats" id="stats"></div>
+  <div class="header-title">🪙 Coin Index Pro</div>
+  <div class="header-stats" id="stats">טוען...</div>
 </div>
 
-<div class="filter-bar" id="filterBar">
-  <div class="filter-chip active" data-filter="all" onclick="setFilter('all')">הכל</div>
-  <div class="filter-chip" data-filter="ישראל" onclick="setFilter('ישראל')">🇮🇱 ישראל</div>
-  <div class="filter-chip" data-filter="המנדט הבריטי" onclick="setFilter('המנדט הבריטי')">🇬🇧 מנדט</div>
-  <div class="filter-chip" data-filter="האימפריה העות'מאנית" onclick="setFilter('האימפריה העות\'מאנית')">🕌 עות'מאני</div>
-  <div class="filter-chip" data-filter='ארה"ב' onclick='setFilter("ארה&quot;ב")'>🇺🇸 ארה"ב</div>
-  <div class="filter-chip" data-filter="בריטניה" onclick="setFilter('בריטניה')">🇬🇧 בריטניה</div>
-  <div class="filter-chip" data-filter="רוסיה" onclick="setFilter('רוסיה')">🇷🇺 רוסיה</div>
-  <div class="filter-chip" data-filter="ברית המועצות" onclick="setFilter('ברית המועצות')">☭ בריה"מ</div>
+<div class="toolbar">
+  <div class="filter-scroll">
+    <button class="chip active" data-f="all" onclick="setFilter('all')">הכל</button>
+    <button class="chip" data-f="ישראל" onclick="setFilter('ישראל')">🇮🇱 ישראל</button>
+    <button class="chip" data-f="המנדט הבריטי" onclick="setFilter('המנדט הבריטי')">🇬🇧 מנדט</button>
+    <button class="chip" data-f="האימפריה העות'מאנית" onclick="setFilter('האימפריה העות\'מאנית')">🕌 עות'מאני</button>
+    <button class="chip" data-f='ארה"ב' onclick='setFilter("ארה\"ב")'>🇺🇸 ארה"ב</button>
+    <button class="chip" data-f="רוסיה" onclick="setFilter('רוסיה')">🇷🇺 רוסיה</button>
+    <button class="chip" data-f="גרמניה" onclick="setFilter('גרמניה')">🇩🇪 גרמניה</button>
+    <button class="chip" data-f="ברית המועצות" onclick="setFilter('ברית המועצות')">☭ בריה"מ</button>
+  </div>
+  <div class="cols-control">
+    <span class="cols-label">עמודות:</span>
+    <button class="cols-btn" onclick="changeCols(-1)">−</button>
+    <span class="cols-num" id="colsNum">2</span>
+    <button class="cols-btn" onclick="changeCols(1)">+</button>
+  </div>
 </div>
 
 <div class="grid" id="grid">
-  <div class="loading"><div class="spinner"></div><br>טוען...</div>
+  <div class="loading"><div class="spin"></div><br><br>טוען...</div>
 </div>
 
-<!-- Add/Edit Modal -->
-<div class="modal-overlay hidden" id="modal" onclick="closeModalOutside(event)">
-  <div class="modal" id="modalContent">
-    <button class="close-btn" onclick="closeModal()">✕</button>
-    <div class="modal-title" id="modalTitle">הוספת מטבע חדש</div>
-    
-    <!-- AI Section -->
-    <div id="aiSection" class="ai-box">
-      <div class="ai-title">🤖 זיהוי אוטומטי עם AI</div>
-      <div class="two-cols">
-        <div>
-          <div style="font-size:0.8em;margin-bottom:4px;color:#555;">פנים המטבע:</div>
-          <label class="img-upload" style="padding:10px;display:block;">
-            <input type="file" id="aiFront" accept="image/*" onchange="previewAI('front',this)">
-            <span id="aiFrontLabel">📷 העלה</span>
-          </label>
-          <img id="aiFrontPreview" style="width:100%;border-radius:8px;margin-top:4px;display:none;">
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="overlayClick(event)">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <span class="modal-title" id="modalTitle">הוספת מטבע</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- AI Section -->
+      <div class="ai-section" id="aiSection">
+        <div class="ai-head">🤖 זיהוי אוטומטי עם AI</div>
+        <div class="ai-imgs">
+          <div class="ai-img-box">
+            <label class="ai-img-box-inner">
+              <input type="file" id="aiFrontFile" accept="image/*" onchange="aiPreview('front',this)">
+              <div class="ai-img-label">📷 פנים המטבע</div>
+            </label>
+            <img class="ai-img-preview" id="aiFrontPrev">
+            <button class="ai-cam-btn" onclick="openCamera('aiFrontFile')">📸 צלם</button>
+          </div>
+          <div class="ai-img-box">
+            <label class="ai-img-box-inner">
+              <input type="file" id="aiBackFile" accept="image/*" onchange="aiPreview('back',this)">
+              <div class="ai-img-label">📷 גב (אופציונלי)</div>
+            </label>
+            <img class="ai-img-preview" id="aiBackPrev">
+            <button class="ai-cam-btn" onclick="openCamera('aiBackFile')">📸 צלם</button>
+          </div>
         </div>
-        <div>
-          <div style="font-size:0.8em;margin-bottom:4px;color:#555;">גב (אופציונלי):</div>
-          <label class="img-upload" style="padding:10px;display:block;">
-            <input type="file" id="aiBack" accept="image/*" onchange="previewAI('back',this)">
-            <span id="aiBackLabel">📷 העלה</span>
-          </label>
-          <img id="aiBackPreview" style="width:100%;border-radius:8px;margin-top:4px;display:none;">
+        <button class="btn btn-purple" id="identifyBtn" onclick="identifyCoin()">✨ זהה מטבע</button>
+        <div class="ai-result" id="aiResult"></div>
+      </div>
+
+      <!-- Form -->
+      <div class="fg" style="grid-column:1/-1">
+        <label>שם המטבע</label>
+        <input type="text" id="fName" placeholder="שם המטבע...">
+      </div>
+      <div class="row2" style="margin-bottom:13px">
+        <div class="fg" style="margin-bottom:0">
+          <label>מחיר (₪)</label>
+          <input type="number" id="fPrice" placeholder="0">
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>שנה</label>
+          <input type="text" id="fYear" placeholder="שנה">
         </div>
       </div>
-      <button class="btn btn-purple" style="margin-top:8px;" onclick="identifyCoin()" id="identifyBtn">✨ זהה מטבע</button>
-      <div id="aiResult" class="ai-result" style="margin-top:8px;display:none;"></div>
-    </div>
-    
-    <div class="form-group">
-      <label>שם המטבע</label>
-      <input type="text" id="fName" placeholder="שם המטבע...">
-    </div>
-    <div class="two-cols">
-      <div class="form-group">
-        <label>מחיר (₪)</label>
-        <input type="number" id="fPrice" placeholder="0">
+      <div class="row2" style="margin-bottom:13px">
+        <div class="fg" style="margin-bottom:0">
+          <label>מדינה</label>
+          <select id="fCountry">
+            <option>ישראל</option><option>המנדט הבריטי</option>
+            <option>האימפריה העות'מאנית</option><option>פרס / איראן</option>
+            <option>מצרים</option><option>סוריה</option><option>לבנון</option>
+            <option>ירדן</option><option>עיראק</option><option>ערב הסעודית</option>
+            <option>תורכיה</option><option>הודו</option><option>סין</option>
+            <option>יפן</option><option>קוריאה</option><option>בריטניה</option>
+            <option>צרפת</option><option>גרמניה</option><option>האימפריה הגרמנית</option>
+            <option>רייך השלישי</option><option>פרוסיה</option><option>אוסטריה</option>
+            <option>האימפריה האוסטרו-הונגרית</option><option>איטליה</option>
+            <option>האימפריה הרומית</option><option>ספרד</option><option>פורטוגל</option>
+            <option>הולנד</option><option>שוודיה</option><option>פולין</option>
+            <option>יוון</option><option>רוסיה</option><option>ברית המועצות</option>
+            <option>האימפריה הרוסית</option><option>ארה"ב</option><option>קנדה</option>
+            <option>ברזיל</option><option>דרום אפריקה</option><option>מרוקו</option>
+            <option>תוניסיה</option><option>אלג'יריה</option><option>לוב</option>
+            <option>אחר</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:0">
+          <label>חומר</label>
+          <select id="fMaterial">
+            <option>כסף</option><option>זהב</option><option>נחושת</option>
+            <option>ניקל</option><option>ברונזה</option><option>אלומיניום</option>
+            <option>מתכת מעורבת</option>
+          </select>
+        </div>
       </div>
-      <div class="form-group">
-        <label>שנה</label>
-        <input type="text" id="fYear" placeholder="שנה">
+
+      <!-- Upload -->
+      <div class="fg">
+        <label>תמונות</label>
+        <div class="upload-area">
+          <label class="upload-area-inner">
+            <input type="file" id="fImages" accept="image/*" multiple onchange="previewImgs(this)">
+            <div class="upload-label"><span>🖼️</span>לחץ לבחירת תמונות מהגלריה</div>
+          </label>
+          <button class="upload-cam-btn" onclick="openCameraMulti()">📸 צלם תמונה חדשה</button>
+        </div>
+        <div class="img-preview" id="imgPreview"></div>
       </div>
+
+      <!-- תגובות -->
+      <div class="divider"></div>
+      <div class="comments-section" id="commentsSection" style="display:none">
+        <div class="comments-title">💬 תגובות</div>
+        <div id="commentsList"></div>
+        <div class="comment-input-row">
+          <input type="text" id="commentInput" placeholder="כתוב תגובה..." onkeydown="if(event.key==='Enter')addComment()">
+          <button class="comment-send" onclick="addComment()">שלח</button>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <button class="btn btn-green" id="saveBtn" onclick="saveCoin()">💾 שמור מטבע</button>
+      <button class="btn btn-red" id="deleteBtn" onclick="deleteCoin()" style="display:none">🗑️ מחק מטבע</button>
+      <button class="btn btn-gray" onclick="closeModal()">ביטול</button>
     </div>
-    <div class="form-group">
-      <label>מדינה</label>
-      <select id="fCountry">
-        <option>ישראל</option>
-        <option>המנדט הבריטי</option>
-        <option>האימפריה העות'מאנית</option>
-        <option>פרס / איראן</option>
-        <option>מצרים</option>
-        <option>סוריה</option>
-        <option>לבנון</option>
-        <option>ירדן</option>
-        <option>עיראק</option>
-        <option>ערב הסעודית</option>
-        <option>תורכיה</option>
-        <option>אפגניסטן</option>
-        <option>הודו</option>
-        <option>סין</option>
-        <option>יפן</option>
-        <option>קוריאה</option>
-        <option>בריטניה</option>
-        <option>צרפת</option>
-        <option>גרמניה</option>
-        <option>האימפריה הגרמנית</option>
-        <option>רייך השלישי</option>
-        <option>פרוסיה</option>
-        <option>אוסטריה</option>
-        <option>האימפריה האוסטרו-הונגרית</option>
-        <option>איטליה</option>
-        <option>האימפריה הרומית</option>
-        <option>ספרד</option>
-        <option>פורטוגל</option>
-        <option>הולנד</option>
-        <option>בלגיה</option>
-        <option>שווייץ</option>
-        <option>שוודיה</option>
-        <option>דנמרק</option>
-        <option>נורווגיה</option>
-        <option>פולין</option>
-        <option>צ'כוסלובקיה</option>
-        <option>יוגוסלביה</option>
-        <option>בולגריה</option>
-        <option>רומניה</option>
-        <option>יוון</option>
-        <option>פינלנד</option>
-        <option>רוסיה</option>
-        <option>ברית המועצות</option>
-        <option>האימפריה הרוסית</option>
-        <option>ארה"ב</option>
-        <option>קנדה</option>
-        <option>מקסיקו</option>
-        <option>ברזיל</option>
-        <option>ארגנטינה</option>
-        <option>צ'ילה</option>
-        <option>פרו</option>
-        <option>דרום אפריקה</option>
-        <option>מרוקו</option>
-        <option>תוניסיה</option>
-        <option>אלג'יריה</option>
-        <option>לוב</option>
-        <option>אחר</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>חומר</label>
-      <select id="fMaterial">
-        <option>כסף</option>
-        <option>זהב</option>
-        <option>נחושת</option>
-        <option>ניקל</option>
-        <option>ברונזה</option>
-        <option>אלומיניום</option>
-        <option>מתכת מעורבת</option>
-      </select>
-    </div>
-    
-    <div class="form-group">
-      <label>תמונות</label>
-      <label class="img-upload">
-        <input type="file" id="fImages" accept="image/*" multiple onchange="previewImages(this)">
-        <div class="img-upload-label">📷 לחץ להעלאת תמונות<br><small>ניתן לבחור מספר תמונות</small></div>
-      </label>
-      <div class="img-preview" id="imgPreview"></div>
-    </div>
-    
-    <button class="btn btn-green" onclick="saveCoin()" id="saveBtn">🚀 שמור מטבע</button>
-    <button class="btn btn-red hidden" onclick="deleteCoin()" id="deleteBtn">🗑️ מחק מטבע</button>
-    <button class="btn btn-gray" onclick="closeModal()">ביטול</button>
   </div>
 </div>
 
@@ -258,289 +277,285 @@
 
 <script>
 const API = 'https://coins-api-qkva.onrender.com';
-let coins = [];
-let currentFilter = 'all';
-let editingId = null;
-let existingImages = [];
-let newImageFiles = [];
-let aiFrontFile = null;
-let aiBackFile = null;
+let coins=[], filter='all', cols=2;
+let editId=null, existImgs=[], newFiles=[], aiFront=null, aiBack=null;
+let comments={}; // {coinId: [text,...]}
 
-async function loadCoins() {
-  try {
-    const res = await fetch(`${API}/coins`);
-    coins = await res.json();
-    render();
-  } catch(e) {
-    document.getElementById('grid').innerHTML = '<div class="loading">שגיאה בטעינה</div>';
-  }
+function initCols() {
+  cols = window.innerWidth >= 900 ? 4 : window.innerWidth >= 600 ? 3 : 1;
+  document.getElementById('colsNum').textContent = cols;
+  applyGrid();
+}
+
+function applyGrid() {
+  document.getElementById('grid').style.gridTemplateColumns = `repeat(${cols},1fr)`;
+}
+
+function changeCols(d) {
+  cols = Math.max(1, Math.min(6, cols+d));
+  document.getElementById('colsNum').textContent = cols;
+  applyGrid();
 }
 
 function setFilter(f) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-  document.querySelector(`[data-filter="${f}"]`)?.classList.add('active');
+  filter=f;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('active', c.dataset.f===f));
   render();
 }
 
-function getFiltered() {
-  if (currentFilter === 'all') return coins;
-  return coins.filter(c => c.country === currentFilter);
+async function load() {
+  try {
+    const r = await fetch(`${API}/coins`);
+    coins = await r.json();
+    // טען תגובות מ-localStorage
+    const saved = localStorage.getItem('coinComments');
+    if(saved) comments = JSON.parse(saved);
+    render();
+  } catch { document.getElementById('grid').innerHTML='<div class="loading">שגיאה בטעינה</div>'; }
+}
+
+function saveComments() {
+  localStorage.setItem('coinComments', JSON.stringify(comments));
 }
 
 function render() {
-  const filtered = getFiltered();
-  const total = coins.reduce((s,c) => s + (parseFloat(c.price)||0), 0);
+  const list = filter==='all' ? coins : coins.filter(c=>c.country===filter);
+  const total = coins.reduce((s,c)=>s+(parseFloat(c.price)||0),0);
   document.getElementById('stats').textContent = `${coins.length} מטבעות | ${total.toLocaleString()} ₪`;
-  
   const grid = document.getElementById('grid');
+  applyGrid();
   grid.innerHTML = '';
-  
-  filtered.forEach(coin => {
-    const imgs = (coin.images||'').split('|').filter(u => u.startsWith('http'));
-    const imgHtml = imgs.length > 0
-      ? `<div class="slideshow">${imgs.map(u=>`<div class="slide"><img src="${u}" loading="lazy"></div>`).join('')}</div>`
-      : `<div class="coin-img-placeholder">🪙</div>`;
+
+  list.forEach(c => {
+    const imgs = (c.images||'').split('|').filter(u=>u.startsWith('http'));
+    const coinComments = comments[String(c.id)] || [];
+    const badge = coinComments.length ? `<div class="comments-badge">💬 ${coinComments.length}</div>` : '';
     
-    const card = document.createElement('div');
-    card.className = 'coin-card';
-    card.innerHTML = `
+    const imgHtml = imgs.length
+      ? `<div class="coin-imgs" style="position:relative">${imgs.map(u=>`<div class="coin-img-slide"><img src="${u}" loading="lazy"></div>`).join('')}${badge}</div>`
+      : `<div class="coin-no-img" style="position:relative">🪙${badge}</div>`;
+
+    const div = document.createElement('div');
+    div.className = 'coin-card';
+    div.innerHTML = `
       ${imgHtml}
-      <div class="coin-info">
-        <div class="coin-name">${coin.name}</div>
-        <div class="coin-price">${coin.price ? coin.price+' ₪' : ''}</div>
+      <div class="coin-body">
+        <div class="coin-row1">
+          <span class="coin-name">${c.name||''}</span>
+          <span class="coin-price">${c.price?c.price+' ₪':''}</span>
+        </div>
         <div class="tags">
-          <span class="tag tag-country">${coin.country||''}</span>
-          <span class="tag tag-material">${coin.material||''}</span>
-          <span class="tag tag-year">${coin.year||''}</span>
+          <span class="tag tag-c">${c.country||''}</span>
+          <span class="tag tag-m">${c.material||''}</span>
+          <span class="tag tag-y">${c.year||''}</span>
         </div>
       </div>
-      <button class="edit-btn" onclick="openEdit('${coin.id}')">✏️ עריכה</button>
+      <div class="card-actions">
+        <button class="card-btn" onclick="openEdit('${c.id}')">✏️ עריכה</button>
+        <button class="card-btn" onclick="shareCoin('${c.id}')">🔗 שתף</button>
+      </div>
     `;
-    grid.appendChild(card);
+    grid.appendChild(div);
   });
-  
-  // Add button
-  const addCard = document.createElement('div');
-  addCard.className = 'add-card';
-  addCard.onclick = openAdd;
-  addCard.innerHTML = '<div class="add-plus">＋</div><div class="add-label">הוסף חדש</div>';
-  grid.appendChild(addCard);
+
+  const add = document.createElement('div');
+  add.className = 'add-card';
+  add.innerHTML = '<div class="add-icon">＋</div><div class="add-text">הוסף מטבע</div>';
+  add.onclick = openAdd;
+  grid.appendChild(add);
+}
+
+function shareCoin(id) {
+  const c = coins.find(x=>String(x.id)===String(id));
+  if(!c) return;
+  const text = `🪙 ${c.name}\n📅 ${c.year||''} | 🌍 ${c.country||''} | ⚗️ ${c.material||''}\n💰 ${c.price||''} ₪`;
+  if(navigator.share) {
+    navigator.share({ title: c.name, text });
+  } else {
+    navigator.clipboard.writeText(text).then(()=>toast('📋 הועתק ללוח!'));
+  }
 }
 
 function openAdd() {
-  editingId = null;
-  existingImages = [];
-  newImageFiles = [];
-  aiFrontFile = null;
-  aiBackFile = null;
-  document.getElementById('modalTitle').textContent = 'הוספת מטבע חדש';
-  document.getElementById('fName').value = '';
-  document.getElementById('fPrice').value = '';
-  document.getElementById('fYear').value = '';
-  document.getElementById('fCountry').value = 'ישראל';
-  document.getElementById('fMaterial').value = 'כסף';
-  document.getElementById('imgPreview').innerHTML = '';
-  document.getElementById('aiSection').style.display = '';
-  document.getElementById('deleteBtn').classList.add('hidden');
-  document.getElementById('aiFrontPreview').style.display = 'none';
-  document.getElementById('aiBackPreview').style.display = 'none';
-  document.getElementById('aiFrontLabel').textContent = '📷 העלה';
-  document.getElementById('aiBackLabel').textContent = '📷 העלה';
-  document.getElementById('aiResult').style.display = 'none';
-  document.getElementById('fImages').value = '';
-  document.getElementById('modal').classList.remove('hidden');
+  editId=null; existImgs=[]; newFiles=[]; aiFront=null; aiBack=null;
+  document.getElementById('modalTitle').textContent='הוספת מטבע חדש';
+  document.getElementById('fName').value='';
+  document.getElementById('fPrice').value='';
+  document.getElementById('fYear').value='';
+  document.getElementById('fCountry').value='ישראל';
+  document.getElementById('fMaterial').value='כסף';
+  document.getElementById('fImages').value='';
+  document.getElementById('imgPreview').innerHTML='';
+  document.getElementById('aiSection').style.display='';
+  document.getElementById('deleteBtn').style.display='none';
+  document.getElementById('commentsSection').style.display='none';
+  document.getElementById('aiFrontPrev').style.display='none';
+  document.getElementById('aiBackPrev').style.display='none';
+  document.getElementById('aiResult').style.display='none';
+  document.getElementById('overlay').classList.add('open');
 }
 
 function openEdit(id) {
-  const coin = coins.find(c => String(c.id) === String(id));
-  if (!coin) return;
-  editingId = id;
-  existingImages = (coin.images||'').split('|').filter(u => u.startsWith('http'));
-  newImageFiles = [];
-  aiFrontFile = null;
-  aiBackFile = null;
-  document.getElementById('modalTitle').textContent = 'עריכת מטבע';
-  document.getElementById('fName').value = coin.name||'';
-  document.getElementById('fPrice').value = coin.price||'';
-  document.getElementById('fYear').value = coin.year||'';
-  document.getElementById('fCountry').value = coin.country||'ישראל';
-  document.getElementById('fMaterial').value = coin.material||'כסף';
-  document.getElementById('aiSection').style.display = 'none';
-  document.getElementById('deleteBtn').classList.remove('hidden');
-  document.getElementById('fImages').value = '';
-  
-  const preview = document.getElementById('imgPreview');
-  preview.innerHTML = existingImages.map((url,i) => `
-    <div class="img-preview-item">
-      <img src="${url}">
-      <button class="img-remove" onclick="removeExistingImg(${i})">✕</button>
+  const c = coins.find(x=>String(x.id)===String(id));
+  if(!c) return;
+  editId=id; existImgs=(c.images||'').split('|').filter(u=>u.startsWith('http')); newFiles=[]; aiFront=null; aiBack=null;
+  document.getElementById('modalTitle').textContent='עריכת מטבע';
+  document.getElementById('fName').value=c.name||'';
+  document.getElementById('fPrice').value=c.price||'';
+  document.getElementById('fYear').value=c.year||'';
+  document.getElementById('fCountry').value=c.country||'ישראל';
+  document.getElementById('fMaterial').value=c.material||'כסף';
+  document.getElementById('fImages').value='';
+  document.getElementById('aiSection').style.display='none';
+  document.getElementById('deleteBtn').style.display='';
+  renderPreview();
+  renderComments(id);
+  document.getElementById('commentsSection').style.display='';
+  document.getElementById('overlay').classList.add('open');
+}
+
+function renderComments(id) {
+  const list = comments[String(id)] || [];
+  document.getElementById('commentsList').innerHTML = list.map((t,i)=>`
+    <div class="comment-item">
+      ${t}
+      <button class="comment-del" onclick="deleteComment('${id}',${i})">✕</button>
     </div>
-  `).join('');
-  
-  document.getElementById('modal').classList.remove('hidden');
+  `).join('') || '<div style="font-size:0.8em;color:#bbb;margin-bottom:6px">אין תגובות עדיין</div>';
+  document.getElementById('commentInput').value='';
 }
 
-function removeExistingImg(i) {
-  existingImages.splice(i, 1);
-  openEdit(editingId);
+function addComment() {
+  const t = document.getElementById('commentInput').value.trim();
+  if(!t || !editId) return;
+  if(!comments[String(editId)]) comments[String(editId)]=[];
+  comments[String(editId)].push(t);
+  saveComments();
+  renderComments(editId);
+  render();
 }
 
-function previewImages(input) {
-  newImageFiles = Array.from(input.files);
-  const preview = document.getElementById('imgPreview');
-  const existingHtml = existingImages.map((url,i) => `
-    <div class="img-preview-item">
-      <img src="${url}">
-      <button class="img-remove" onclick="removeExistingImg(${i})">✕</button>
-    </div>
-  `).join('');
-  const newHtml = newImageFiles.map((f,i) => {
-    const url = URL.createObjectURL(f);
-    return `<div class="img-preview-item"><img src="${url}"><button class="img-remove" onclick="removeNewImg(${i})">✕</button></div>`;
-  }).join('');
-  preview.innerHTML = existingHtml + newHtml;
+function deleteComment(id, i) {
+  comments[String(id)].splice(i,1);
+  saveComments();
+  renderComments(id);
+  render();
 }
 
-function removeNewImg(i) {
-  newImageFiles.splice(i, 1);
-  previewImages({ files: newImageFiles });
+function renderPreview() {
+  document.getElementById('imgPreview').innerHTML =
+    existImgs.map((u,i)=>`<div class="img-prev-item"><img src="${u}"><button class="img-prev-del" onclick="removeExist(${i})">✕</button></div>`).join('') +
+    newFiles.map((f,i)=>`<div class="img-prev-item"><img src="${URL.createObjectURL(f)}"><button class="img-prev-del" onclick="removeNew(${i})">✕</button></div>`).join('');
 }
 
-function previewAI(side, input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (side === 'front') {
-    aiFrontFile = file;
-    document.getElementById('aiFrontLabel').textContent = '✅ ' + file.name.substring(0,10);
-    const preview = document.getElementById('aiFrontPreview');
-    preview.src = URL.createObjectURL(file);
-    preview.style.display = 'block';
-  } else {
-    aiBackFile = file;
-    document.getElementById('aiBackLabel').textContent = '✅ ' + file.name.substring(0,10);
-    const preview = document.getElementById('aiBackPreview');
-    preview.src = URL.createObjectURL(file);
-    preview.style.display = 'block';
-  }
+function removeExist(i) { existImgs.splice(i,1); renderPreview(); }
+function removeNew(i) { newFiles.splice(i,1); renderPreview(); }
+
+function previewImgs(input) {
+  newFiles = [...newFiles, ...Array.from(input.files)];
+  input.value='';
+  renderPreview();
+}
+
+// פתיחת מצלמה ישירה
+function openCamera(inputId) {
+  const input = document.getElementById(inputId);
+  input.setAttribute('capture','environment');
+  input.click();
+}
+
+function openCameraMulti() {
+  const tmp = document.createElement('input');
+  tmp.type='file'; tmp.accept='image/*'; tmp.capture='environment';
+  tmp.onchange = e => previewImgs(e.target);
+  tmp.click();
+}
+
+function aiPreview(side, input) {
+  const f=input.files[0]; if(!f) return;
+  if(side==='front') { aiFront=f; const img=document.getElementById('aiFrontPrev'); img.src=URL.createObjectURL(f); img.style.display='block'; }
+  else { aiBack=f; const img=document.getElementById('aiBackPrev'); img.src=URL.createObjectURL(f); img.style.display='block'; }
 }
 
 async function identifyCoin() {
-  if (!aiFrontFile) { showToast('העלה תמונה של פנים המטבע'); return; }
-  const btn = document.getElementById('identifyBtn');
-  btn.textContent = '🔍 מזהה...';
-  btn.disabled = true;
+  if(!aiFront){toast('העלה תמונת פנים של המטבע');return;}
+  const btn=document.getElementById('identifyBtn');
+  btn.textContent='🔍 מזהה...'; btn.disabled=true;
   try {
-    const fd = new FormData();
-    fd.append('front', aiFrontFile);
-    if (aiBackFile) fd.append('back', aiBackFile);
-    const res = await fetch(`${API}/identify`, { method: 'POST', body: fd });
-    const data = await res.json();
-    if (data.error) { showToast('שגיאה: ' + data.error); return; }
-    document.getElementById('fName').value = data.name||'';
-    document.getElementById('fPrice').value = data.price||'';
-    document.getElementById('fYear').value = data.year||'';
-    if (data.country) document.getElementById('fCountry').value = data.country;
-    if (data.material) document.getElementById('fMaterial').value = data.material;
-    document.getElementById('aiResult').style.display = 'block';
-    document.getElementById('aiResult').innerHTML = `✅ זוהה: <b>${data.name}</b> | ${data.country} | ${data.year} | ~${data.price} ₪`;
-    // Add AI images to upload list
-    if (aiFrontFile) newImageFiles.unshift(aiFrontFile);
-    if (aiBackFile) newImageFiles.push(aiBackFile);
-    previewImages({ files: newImageFiles });
-  } catch(e) {
-    showToast('שגיאת זיהוי');
-  } finally {
-    btn.textContent = '✨ זהה מטבע';
-    btn.disabled = false;
-  }
+    const fd=new FormData();
+    fd.append('front',aiFront);
+    if(aiBack) fd.append('back',aiBack);
+    const r=await fetch(`${API}/identify`,{method:'POST',body:fd});
+    const d=await r.json();
+    if(d.error){toast('שגיאה: '+d.error);return;}
+    document.getElementById('fName').value=d.name||'';
+    document.getElementById('fPrice').value=d.price||'';
+    document.getElementById('fYear').value=d.year||'';
+    // תיקון: וודא שהחומר והמדינה מוגדרים נכון
+    const countries=[...document.getElementById('fCountry').options].map(o=>o.value);
+    const materials=[...document.getElementById('fMaterial').options].map(o=>o.value);
+    if(d.country && countries.includes(d.country)) document.getElementById('fCountry').value=d.country;
+    if(d.material && materials.includes(d.material)) document.getElementById('fMaterial').value=d.material;
+    const res=document.getElementById('aiResult');
+    res.style.display='block';
+    res.innerHTML=`✅ <b>${d.name}</b> | ${d.country} | ${d.year} | ${d.material} | ~${d.price} ₪`;
+    if(aiFront) newFiles.unshift(aiFront);
+    if(aiBack) newFiles.push(aiBack);
+    renderPreview();
+  } catch(e){toast('שגיאת זיהוי: '+e.message);}
+  finally{btn.textContent='✨ זהה מטבע';btn.disabled=false;}
 }
 
-async function uploadImage(file) {
-  const fd = new FormData();
-  fd.append('file', file);
-  const res = await fetch(`${API}/upload`, { method: 'POST', body: fd });
-  const data = await res.json();
-  return data.url;
+async function uploadFile(f) {
+  const fd=new FormData(); fd.append('file',f);
+  const r=await fetch(`${API}/upload`,{method:'POST',body:fd});
+  return (await r.json()).url;
 }
 
 async function saveCoin() {
-  const name = document.getElementById('fName').value.trim();
-  if (!name) { showToast('נא להזין שם מטבע'); return; }
-  
-  const btn = document.getElementById('saveBtn');
-  btn.textContent = '⏳ שומר...';
-  btn.disabled = true;
-  
+  const name=document.getElementById('fName').value.trim();
+  if(!name){toast('נא להזין שם');return;}
+  const btn=document.getElementById('saveBtn');
+  btn.textContent='⏳ שומר...'; btn.disabled=true;
   try {
-    // Upload new images
-    const uploadedUrls = [];
-    for (const file of newImageFiles) {
-      const url = await uploadImage(file);
-      if (url) uploadedUrls.push(url);
-    }
-    
-    const allImages = [...existingImages, ...uploadedUrls];
-    const coinData = {
-      id: editingId || String(Date.now()),
+    const urls=[];
+    for(const f of newFiles){const u=await uploadFile(f);if(u)urls.push(u);}
+    const allImgs=[...existImgs,...urls];
+    const data={
+      id:editId||String(Date.now()),
       name,
-      price: document.getElementById('fPrice').value,
-      country: document.getElementById('fCountry').value,
-      material: document.getElementById('fMaterial').value,
-      year: document.getElementById('fYear').value,
-      images: allImages.join('|'),
-      comments: ''
+      price:document.getElementById('fPrice').value,
+      country:document.getElementById('fCountry').value,
+      material:document.getElementById('fMaterial').value,
+      year:document.getElementById('fYear').value,
+      images:allImgs.join('|'),
+      comments:''
     };
-    
-    if (editingId) {
-      await fetch(`${API}/coins/${editingId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(coinData)
-      });
-    } else {
-      await fetch(`${API}/coins`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(coinData)
-      });
-    }
-    
-    closeModal();
-    showToast('✅ נשמר בהצלחה!');
-    await loadCoins();
-  } catch(e) {
-    showToast('שגיאה בשמירה');
-  } finally {
-    btn.textContent = '🚀 שמור מטבע';
-    btn.disabled = false;
-  }
+    if(editId) await fetch(`${API}/coins/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    else await fetch(`${API}/coins`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+    closeModal(); toast('✅ נשמר!'); await load();
+  } catch{toast('שגיאה בשמירה');}
+  finally{btn.textContent='💾 שמור מטבע';btn.disabled=false;}
 }
 
 async function deleteCoin() {
-  if (!confirm('למחוק את המטבע?')) return;
-  await fetch(`${API}/coins/${editingId}`, { method: 'DELETE' });
-  closeModal();
-  showToast('נמחק');
-  await loadCoins();
+  if(!confirm('למחוק את המטבע?')) return;
+  await fetch(`${API}/coins/${editId}`,{method:'DELETE'});
+  if(comments[String(editId)]) { delete comments[String(editId)]; saveComments(); }
+  closeModal(); toast('נמחק'); await load();
 }
 
-function closeModal() {
-  document.getElementById('modal').classList.add('hidden');
+function closeModal() { document.getElementById('overlay').classList.remove('open'); }
+function overlayClick(e) { if(e.target===document.getElementById('overlay')) closeModal(); }
+
+function toast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-function closeModalOutside(e) {
-  if (e.target === document.getElementById('modal')) closeModal();
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-loadCoins();
+initCols();
+load();
 </script>
 </body>
 </html>
