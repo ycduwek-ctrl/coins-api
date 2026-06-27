@@ -174,20 +174,36 @@
         <div class="ai-head">🤖 זיהוי אוטומטי עם AI</div>
         <div class="ai-imgs">
           <div class="ai-img-box">
-            <label class="ai-img-box-inner">
-              <input type="file" id="aiFrontFile" accept="image/*" onchange="aiPreview('front',this)">
-              <div class="ai-img-label">📷 פנים המטבע</div>
-            </label>
-            <img class="ai-img-preview" id="aiFrontPrev">
-            <button class="ai-cam-btn" onclick="openCamera('aiFrontFile')">📸 צלם</button>
+            <div style="padding:8px;text-align:center;">
+              <div class="ai-img-label" style="margin-bottom:8px;">פנים המטבע</div>
+              <img class="ai-img-preview" id="aiFrontPrev">
+              <div style="display:flex;gap:6px;margin-top:6px;">
+                <label style="flex:1;background:#f3e5f5;border-radius:8px;padding:7px;text-align:center;cursor:pointer;font-size:0.75em;color:#9c27b0;font-weight:700;">
+                  <input type="file" id="aiFrontFile" accept="image/*" style="display:none" onchange="aiPreview('front',this)">
+                  🖼️ גלריה
+                </label>
+                <label style="flex:1;background:#ede7f6;border-radius:8px;padding:7px;text-align:center;cursor:pointer;font-size:0.75em;color:#7b1fa2;font-weight:700;">
+                  <input type="file" id="aiFrontCam" accept="image/*" capture="environment" style="display:none" onchange="aiPreview('front',this)">
+                  📸 צלם
+                </label>
+              </div>
+            </div>
           </div>
           <div class="ai-img-box">
-            <label class="ai-img-box-inner">
-              <input type="file" id="aiBackFile" accept="image/*" onchange="aiPreview('back',this)">
-              <div class="ai-img-label">📷 גב (אופציונלי)</div>
-            </label>
-            <img class="ai-img-preview" id="aiBackPrev">
-            <button class="ai-cam-btn" onclick="openCamera('aiBackFile')">📸 צלם</button>
+            <div style="padding:8px;text-align:center;">
+              <div class="ai-img-label" style="margin-bottom:8px;">גב (אופציונלי)</div>
+              <img class="ai-img-preview" id="aiBackPrev">
+              <div style="display:flex;gap:6px;margin-top:6px;">
+                <label style="flex:1;background:#f3e5f5;border-radius:8px;padding:7px;text-align:center;cursor:pointer;font-size:0.75em;color:#9c27b0;font-weight:700;">
+                  <input type="file" id="aiBackFile" accept="image/*" style="display:none" onchange="aiPreview('back',this)">
+                  🖼️ גלריה
+                </label>
+                <label style="flex:1;background:#ede7f6;border-radius:8px;padding:7px;text-align:center;cursor:pointer;font-size:0.75em;color:#7b1fa2;font-weight:700;">
+                  <input type="file" id="aiBackCam" accept="image/*" capture="environment" style="display:none" onchange="aiPreview('back',this)">
+                  📸 צלם
+                </label>
+              </div>
+            </div>
           </div>
         </div>
         <button class="btn btn-purple" id="identifyBtn" onclick="identifyCoin()">✨ זהה מטבע</button>
@@ -244,12 +260,17 @@
       <!-- Upload -->
       <div class="fg">
         <label>תמונות</label>
-        <div class="upload-area">
-          <label class="upload-area-inner">
-            <input type="file" id="fImages" accept="image/*" multiple onchange="previewImgs(this)">
-            <div class="upload-label"><span>🖼️</span>לחץ לבחירת תמונות מהגלריה</div>
+        <div style="display:flex;gap:8px;">
+          <label style="flex:1;background:#f5f5f5;border:1.5px dashed #ddd;border-radius:10px;padding:12px;text-align:center;cursor:pointer;">
+            <input type="file" id="fImages" accept="image/*" multiple style="display:none" onchange="previewImgs(this)">
+            <div style="font-size:1.4em;margin-bottom:4px;">🖼️</div>
+            <div style="font-size:0.78em;color:#777;font-weight:600;">גלריה</div>
           </label>
-          <button class="upload-cam-btn" onclick="openCameraMulti()">📸 צלם תמונה חדשה</button>
+          <label style="flex:1;background:#f5f5f5;border:1.5px dashed #ddd;border-radius:10px;padding:12px;text-align:center;cursor:pointer;">
+            <input type="file" id="fImagesCam" accept="image/*" capture="environment" style="display:none" onchange="previewImgs(this)">
+            <div style="font-size:1.4em;margin-bottom:4px;">📸</div>
+            <div style="font-size:0.78em;color:#777;font-weight:600;">צלם</div>
+          </label>
         </div>
         <div class="img-preview" id="imgPreview"></div>
       </div>
