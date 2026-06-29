@@ -30,46 +30,46 @@ cloudinary.config(
     api_secret=os.environ["CLOUDINARY_API_SECRET"]
 )
 
-COLS = ["id","name","pokemon","set","number","year","condition","language","rarity","value","images"]
+COLS = ["id", "name", "price", "country", "material", "year", "images", "comments"]
 
 def get_sheet():
     info = json.loads(os.environ["GOOGLE_SERVICE_ACCOUNT"])
     creds = Credentials.from_service_account_info(info, scopes=SCOPES)
     client = gspread.authorize(creds)
-    return client.open_by_url(SHEET_URL).worksheet("cards")
+    return client.open_by_url(SHEET_URL).worksheet("coins")
 
-@app.get("/cards")
-def get_cards():
+@app.get("/coins")
+def get_coins():
     ws = get_sheet()
     return ws.get_all_records()
 
-@app.post("/cards")
-def add_card(data: dict):
+@app.post("/coins")
+def add_coin(data: dict):
     ws = get_sheet()
     rows = ws.get_all_records()
     if not rows:
         ws.append_row(COLS)
-    ws.append_row([data.get(c,"") for c in COLS])
+    ws.append_row([data.get(c, "") for c in COLS])
     return {"ok": True}
 
-@app.put("/cards/{card_id}")
-def update_card(card_id: str, data: dict):
+@app.put("/coins/{coin_id}")
+def update_coin(coin_id: str, data: dict):
     ws = get_sheet()
     records = ws.get_all_records()
     for i, row in enumerate(records):
-        if str(row["id"]) == card_id:
+        if str(row["id"]) == coin_id:
             for j, col in enumerate(COLS):
                 if col in data:
                     ws.update_cell(i + 2, j + 1, data[col])
             return {"ok": True}
     return {"ok": False}
 
-@app.delete("/cards/{card_id}")
-def delete_card(card_id: str):
+@app.delete("/coins/{coin_id}")
+def delete_coin(coin_id: str):
     ws = get_sheet()
     records = ws.get_all_records()
     for i, row in enumerate(records):
-        if str(row["id"]) == card_id:
+        if str(row["id"]) == coin_id:
             ws.delete_rows(i + 2)
             return {"ok": True}
     return {"ok": False}
@@ -80,8 +80,8 @@ async def upload_image(file: UploadFile = File(...)):
     img = Image.open(io.BytesIO(data)).convert("RGB")
     w, h = img.size
     s = min(w, h)
-    img = img.crop(((w-s)//2, (h-s)//2, (w+s)//2, (h+s)//2))
-    img = img.resize((1200, 1800), Image.LANCZOS)
+    img = img.crop(((w - s) // 2, (h - s) // 2, (w + s) // 2, (h + s) // 2))
+    img = img.resize((800, 800), Image.LANCZOS)
     buf = io.BytesIO()
     img.save(buf, format="WEBP", quality=85)
     res = cloudinary.uploader.upload(buf.getvalue(), format="webp")
@@ -91,32 +91,35 @@ async def upload_image(file: UploadFile = File(...)):
 async def identify(front: UploadFile = File(...), back: UploadFile = File(None)):
     def compress(f):
         img = Image.open(io.BytesIO(f)).convert("RGB")
-        img.thumbnail((600,600), Image.LANCZOS)
+        img.thumbnail((600, 600), Image.LANCZOS)
         buf = io.BytesIO()
         img.save(buf, format="JPEG", quality=75)
         return base64.b64encode(buf.getvalue()).decode()
 
     front_b64 = compress(await front.read())
     content = [
-        {"type":"text","text":"""You are a Pokemon card expert. Identify the card and return JSON only:
-{"name":"card name","pokemon":"pokemon name","set":"set name","number":"card number","year":"year","condition":"Mint/Near Mint/Excellent/Good/Poor","rarity":"Common/Uncommon/Rare/Holo Rare/Ultra Rare/Secret Rare","language":"English/Japanese/Hebrew/Other","value":"estimated USD value as number only"}"""},
-        {"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{front_b64}"}}
+        {"type": "text", "text": """You are a coin expert. Identify the coin and return JSON only:
+{"name":"coin name","country":"country in Hebrew","year":"year","material":"כסף/זהב/נחושת/ניקל/ברונזה/אלומיניום/מתכת מעורבת","price":"estimated ILS value as number only"}"""},
+        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{front_b64}"}}
     ]
     if back:
         back_b64 = compress(await back.read())
-        content.append({"type":"image_url","image_url":{"url":f"data:image/jpeg;base64,{back_b64}"}})
+        content.append({"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{back_b64}"}})
 
     res = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
-        headers={"Authorization": f"Bearer {os.environ['OPENROUTER_KEY']}","Content-Type":"application/json"},
-        json={"model":"openrouter/auto","messages":[{"role":"user","content":content}]},
+        headers={
+            "Authorization": f"Bearer {os.environ['OPENROUTER_KEY']}",
+            "Content-Type": "application/json"
+        },
+        json={"model": "openrouter/auto", "messages": [{"role": "user", "content": content}]},
         timeout=30
     )
     result = res.json()
     if "error" in result:
         return {"error": result["error"]["message"]}
     text = result["choices"][0]["message"]["content"].strip()
-    text = re.sub(r'```json|```','',text).strip()
+    text = re.sub(r'```json|```', '', text).strip()
     match = re.search(r'\{.*\}', text, re.DOTALL)
     if match:
         return json.loads(match.group())
